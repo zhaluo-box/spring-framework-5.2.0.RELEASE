@@ -77,7 +77,7 @@ public interface BeanDefinitionReader {
 
 	/**
 	 * Return the BeanNameGenerator to use for anonymous beans
-	 * (without explicit bean name specified).
+	 * (without explicit bean name specified). 生成bean的名字
 	 */
 	BeanNameGenerator getBeanNameGenerator();
 
@@ -91,6 +91,7 @@ public interface BeanDefinitionReader {
 	int loadBeanDefinitions(Resource resource) throws BeanDefinitionStoreException;
 
 	/**
+	 * 加载多个配置文件
 	 * Load bean definitions from the specified resources.
 	 * @param resources the resource descriptors
 	 * @return the number of bean definitions found
@@ -113,6 +114,7 @@ public interface BeanDefinitionReader {
 	int loadBeanDefinitions(String location) throws BeanDefinitionStoreException;
 
 	/**
+	 * 加载多个配置文件
 	 * Load bean definitions from the specified resource locations.
 	 * @param locations the resource locations, to be loaded with the ResourceLoader
 	 * (or ResourcePatternResolver) of this bean definition reader

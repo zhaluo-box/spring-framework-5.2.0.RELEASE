@@ -317,7 +317,7 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 		if (logger.isTraceEnabled()) {
 			logger.trace("Loading XML bean definitions from " + encodedResource);
 		}
-
+		// 从本地线程变量中获取当前的正在加载的资源
 		Set<EncodedResource> currentResources = this.resourcesCurrentlyBeingLoaded.get();
 		if (currentResources == null) {
 			currentResources = new HashSet<>(4);
@@ -390,8 +390,10 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 			throws BeanDefinitionStoreException {
 
 		try {
+			//解析 XML对象 也就是document对象 绘制dom树  TODO 学习 sax xml 解析工具
 			Document doc = doLoadDocument(inputSource, resource);
-			int count = registerBeanDefinitions(doc, resource);
+			//解析dom树，即将解析出的一个个属性保存到BeanDefinition
+			int count = registerBeanDefinitions(doc, resource); // 注册BeanDefinition
 			if (logger.isDebugEnabled()) {
 				logger.debug("Loaded " + count + " bean definitions from " + resource);
 			}
@@ -509,9 +511,13 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 	 * @see BeanDefinitionDocumentReader#registerBeanDefinitions
 	 */
 	public int registerBeanDefinitions(Document doc, Resource resource) throws BeanDefinitionStoreException {
+		// 创建beanDefinitionDocumentReader 这个是实际从XML的DOM树中读取BeanDefinition
 		BeanDefinitionDocumentReader documentReader = createBeanDefinitionDocumentReader();
+		//获取注册表BeanDefinitionMap 在本次加载前的数量
 		int countBefore = getRegistry().getBeanDefinitionCount();
+		//加载并注册
 		documentReader.registerBeanDefinitions(doc, createReaderContext(resource));
+		//注册后再次获取数量并减去之前的
 		return getRegistry().getBeanDefinitionCount() - countBefore;
 	}
 
