@@ -170,7 +170,7 @@ public interface ConfigurableApplicationContext extends ApplicationContext, Life
 
 	/**
 	 * Register a shutdown hook with the JVM runtime, closing this context
-	 * on JVM shutdown unless it has already been closed at that time.
+	 * on JVM shutdown unless it has already been closed at that time. JVM关闭的时候, 能够关闭Context
 	 * <p>This method can be called multiple times. Only one shutdown hook
 	 * (at max) will be registered for each context instance.
 	 * <p>As of Spring Framework 5.2, the {@linkplain Thread#getName() name} of
