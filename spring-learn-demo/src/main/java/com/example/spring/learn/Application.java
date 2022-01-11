@@ -17,8 +17,8 @@ import org.springframework.context.support.FileSystemXmlApplicationContext;
 public class Application {
 
 	public static void main(String[] args) {
-		//	annotationTest();
-		fileSystemTest();
+		annotationTest();
+		// fileSystemTest();
 	}
 
 	private static void annotationTest() {
