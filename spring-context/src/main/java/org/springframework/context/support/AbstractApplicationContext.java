@@ -321,7 +321,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	}
 
 	/**
-	 * Create and return a new {@link StandardEnvironment}.
+	 * Create and return a new {@link StandardEnvironment}. 创建并返回一个标准环境， 子类可以通过覆写此方法，实现自定义
 	 * <p>Subclasses may override this method in order to supply
 	 * a custom {@link ConfigurableEnvironment} implementation.
 	 */

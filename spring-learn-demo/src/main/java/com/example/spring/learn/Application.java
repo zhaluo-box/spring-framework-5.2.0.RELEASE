@@ -1,6 +1,5 @@
 package com.example.spring.learn;
 
-import com.example.spring.learn.common.entity.User;
 import com.example.spring.learn.common.service.WelcomeService;
 import com.example.spring.learn.service.DefaultWelcomeService;
 import org.springframework.context.ApplicationContext;
@@ -8,15 +7,20 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.util.Assert;
+
+import java.io.*;
 
 /**
  * 程序入口
  */
 @Configuration
 @ComponentScan(value = "com.example.spring.learn")
+@SuppressWarnings("all")
 public class Application {
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception {
 		//	annotationTest();
 		fileSystemTest();
 	}
@@ -45,7 +49,7 @@ public class Application {
 		System.out.println("无参构造 : " + context.getBean("user1"));
 		System.out.println("静态工厂 : " + context.getBean("user2"));
 		System.out.println("静态工厂 : " + context.getBean("user2"));
-		System.out.println("实例工厂 : " + context.getBean("user3"));
+		System.out.println("实力工厂 : " + context.getBean("user3"));
 		System.out.println("实例工厂 : " + context.getBean("user3"));
 
 		// FactoryBean  
@@ -53,4 +57,5 @@ public class Application {
 		System.out.println("factoryBean : " + context.getBean("&userFactoryBean"));
 
 	}
+
 }

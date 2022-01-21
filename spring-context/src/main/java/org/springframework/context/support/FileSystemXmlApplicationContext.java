@@ -76,9 +76,9 @@ public class FileSystemXmlApplicationContext extends AbstractXmlApplicationConte
 	}
 
 	/**
-	 * Create a new FileSystemXmlApplicationContext, loading the definitions
-	 * from the given XML file and automatically refreshing the context.
-	 * @param configLocation file path
+	 * Create a new FileSystemXmlApplicationContext, loading the definitions from the given XML file and automatically refreshing the context.
+	 * 创建一个FileSystemXmlApplicationContext,从xml文件加载BeanDefinitions并自动刷新上下文
+	 * @param configLocation file path 文件路径
 	 * @throws BeansException if context creation failed
 	 */
 	public FileSystemXmlApplicationContext(String configLocation) throws BeansException {
