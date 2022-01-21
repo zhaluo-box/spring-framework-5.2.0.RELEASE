@@ -17,8 +17,8 @@ import org.springframework.context.support.FileSystemXmlApplicationContext;
 public class Application {
 
 	public static void main(String[] args) {
-		annotationTest();
-		// fileSystemTest();
+		//	annotationTest();
+		fileSystemTest();
 	}
 
 	private static void annotationTest() {
@@ -35,8 +35,7 @@ public class Application {
 
 	private static void fileSystemTest() {
 		System.out.println("welcome spring !");
-		//String path = "C:\\workspace\\spring-framework-5.2.0.RELEASE\\spring-learn-demo\\src\\main\\resources\\spring\\spring-config.xml";
-		String path = "C:\\workspace\\encoding\\spring-framework-5.2.0.RELEASE\\spring-learn-demo\\src\\main\\resources\\spring\\spring-config.xml";
+		String path = "C:\\workspace\\spring-framework-5.2.0.RELEASE\\spring-learn-demo\\src\\main\\resources\\spring\\spring-config.xml";
 
 		FileSystemXmlApplicationContext context = new FileSystemXmlApplicationContext(path);
 		WelcomeService helloService = (WelcomeService) context.getBean("helloService");

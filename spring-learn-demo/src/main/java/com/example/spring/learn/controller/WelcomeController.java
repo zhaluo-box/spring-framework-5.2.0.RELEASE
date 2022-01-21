@@ -1,6 +1,7 @@
 package com.example.spring.learn.controller;
 
 import com.example.spring.learn.common.service.WelcomeService;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 

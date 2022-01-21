@@ -295,9 +295,9 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 
 
 	/**
-	 * Load bean definitions from the specified XML file.
-	 * @param resource the resource descriptor for the XML file
-	 * @return the number of bean definitions found
+	 * Load bean definitions from the specified XML file. 从指定的xml文件中加载BeanDefinition
+	 * @param resource the resource descriptor for the XML file  xml 文件的资源描述符
+	 * @return the number of bean definitions found  返回发现的BeanDefinition数量
 	 * @throws BeanDefinitionStoreException in case of loading or parsing errors
 	 */
 	@Override
@@ -308,7 +308,7 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 	/**
 	 * Load bean definitions from the specified XML file.
 	 * @param encodedResource the resource descriptor for the XML file,
-	 * allowing to specify an encoding to use for parsing the file
+	 * allowing to specify an encoding to use for parsing the file 允许使用指定编码解析文件
 	 * @return the number of bean definitions found
 	 * @throws BeanDefinitionStoreException in case of loading or parsing errors
 	 */
@@ -317,7 +317,7 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 		if (logger.isTraceEnabled()) {
 			logger.trace("Loading XML bean definitions from " + encodedResource);
 		}
-		// 从本地线程变量中获取当前的正在加载的资源
+		// 从本地线程变量中获取当前的正在加载的资源 ,基于ThreadLocal<Set<EncodedResource>>
 		Set<EncodedResource> currentResources = this.resourcesCurrentlyBeingLoaded.get();
 		if (currentResources == null) {
 			currentResources = new HashSet<>(4);
@@ -328,9 +328,12 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 					"Detected cyclic loading of " + encodedResource + " - check your import definitions!");
 		}
 		try {
+			// 从资源resource 获取输入流
 			InputStream inputStream = encodedResource.getResource().getInputStream();
 			try {
+				// 包装输入流 为SAX Input Source
 				InputSource inputSource = new InputSource(inputStream);
+				// 如果编码不为null则设定指定编码
 				if (encodedResource.getEncoding() != null) {
 					inputSource.setEncoding(encodedResource.getEncoding());
 				}
@@ -345,6 +348,7 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 					"IOException parsing XML document from " + encodedResource.getResource(), ex);
 		}
 		finally {
+			// 最终移除ThreadLocal 中保存的 encodedResource
 			currentResources.remove(encodedResource);
 			if (currentResources.isEmpty()) {
 				this.resourcesCurrentlyBeingLoaded.remove();
@@ -513,11 +517,11 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 	public int registerBeanDefinitions(Document doc, Resource resource) throws BeanDefinitionStoreException {
 		// 创建beanDefinitionDocumentReader 这个是实际从XML的DOM树中读取BeanDefinition
 		BeanDefinitionDocumentReader documentReader = createBeanDefinitionDocumentReader();
-		//获取注册表BeanDefinitionMap 在本次加载前的数量
+		//获取注册表BeanDefinitionMap 在本次加载【前】的数量
 		int countBefore = getRegistry().getBeanDefinitionCount();
 		//加载并注册
 		documentReader.registerBeanDefinitions(doc, createReaderContext(resource));
-		//注册后再次获取数量并减去之前的
+		//注册后再次获取数量并减去【之前】的， 便是本次加载的BeanDefinition数量
 		return getRegistry().getBeanDefinitionCount() - countBefore;
 	}
 

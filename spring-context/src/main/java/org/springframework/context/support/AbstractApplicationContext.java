@@ -541,7 +541,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				initApplicationEventMulticaster(); // 初始化事件派发器,并注册为单例Bean
 
 				// Initialize other special beans in specific context subclasses.
-				onRefresh(); // 子类实现主题初始化等
+				onRefresh(); // 子类实现主题初始化等， 通常web相关的上下文都会实现
 
 				// Check for listener beans and register them.
 				registerListeners(); // 注册监听器
@@ -886,6 +886,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 */
 	protected void finishRefresh() {
 		// Clear context-level resource caches (such as ASM metadata from scanning).
+		// 清除上下文的缓存，例如ASM中的元数据
 		clearResourceCaches();
 
 		// Initialize lifecycle processor for this context.
