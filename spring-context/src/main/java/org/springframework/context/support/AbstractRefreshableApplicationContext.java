@@ -126,11 +126,11 @@ public abstract class AbstractRefreshableApplicationContext extends AbstractAppl
 			destroyBeans();
 			closeBeanFactory();
 		}
-		try {
+		try { // 创建bean工厂,为Bean工厂设置序列化Id
 			DefaultListableBeanFactory beanFactory = createBeanFactory();
 			beanFactory.setSerializationId(getId());
 			customizeBeanFactory(beanFactory);
-			loadBeanDefinitions(beanFactory);
+			loadBeanDefinitions(beanFactory); // TODO　重点加载BeanDefinitions结合ResourceLoader查看主要是对Bean进行描述
 			synchronized (this.beanFactoryMonitor) {
 				this.beanFactory = beanFactory;
 			}
