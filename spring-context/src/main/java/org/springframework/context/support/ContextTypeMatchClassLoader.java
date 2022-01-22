@@ -60,7 +60,7 @@ class ContextTypeMatchClassLoader extends DecoratingClassLoader implements Smart
 	private final Map<String, byte[]> bytesCache = new ConcurrentHashMap<>(256);
 
 
-	public ContextTypeMatchClassLoader(@Nullable ClassLoader parent) {
+	public  ContextTypeMatchClassLoader(@Nullable ClassLoader parent) {
 		super(parent);
 	}
 

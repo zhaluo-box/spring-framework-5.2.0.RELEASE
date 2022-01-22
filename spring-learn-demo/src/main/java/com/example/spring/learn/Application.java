@@ -1,5 +1,6 @@
 package com.example.spring.learn;
 
+import com.example.spring.learn.common.entity.Student;
 import com.example.spring.learn.common.entity.User;
 import com.example.spring.learn.common.service.WelcomeService;
 import com.example.spring.learn.service.DefaultWelcomeService;
@@ -17,8 +18,8 @@ import org.springframework.context.support.FileSystemXmlApplicationContext;
 public class Application {
 
 	public static void main(String[] args) {
-		//	annotationTest();
-		fileSystemTest();
+		annotationTest();
+		//		fileSystemTest();
 	}
 
 	private static void annotationTest() {
@@ -31,10 +32,22 @@ public class Application {
 
 		WelcomeService welcomeService = (DefaultWelcomeService) applicationContext.getBean("defaultWelcomeService");
 		System.out.println(welcomeService.sayHello("强大的spring 框架"));
+
+		// 演示自定义BeanDefinitionRegistryProcessor
+		Student student1 = (Student) applicationContext.getBean("student");
+		Student student2 = (Student) applicationContext.getBean("student");
+		// 演示原型Bean
+		System.out.println(student1);
+		System.out.println(student2);
+
+		student1.showMe();
+
 	}
 
 	private static void fileSystemTest() {
 		System.out.println("welcome spring !");
+
+		//TODO　　修改为classPath:/spring/spring-config.xml
 		String path = "C:\\workspace\\spring-framework-5.2.0.RELEASE\\spring-learn-demo\\src\\main\\resources\\spring\\spring-config.xml";
 
 		FileSystemXmlApplicationContext context = new FileSystemXmlApplicationContext(path);

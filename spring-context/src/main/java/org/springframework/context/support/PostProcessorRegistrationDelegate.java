@@ -46,34 +46,51 @@ import org.springframework.lang.Nullable;
  * @author Juergen Hoeller
  * @since 4.0
  */
+// final 修饰不允许继承
 final class PostProcessorRegistrationDelegate {
 
+	/**
+	 * 构造私有
+	 */
 	private PostProcessorRegistrationDelegate() {
 	}
 
-
+	/**
+	 * 静态方法
+	 */
 	public static void invokeBeanFactoryPostProcessors(
 			ConfigurableListableBeanFactory beanFactory, List<BeanFactoryPostProcessor> beanFactoryPostProcessors) {
 
 		// Invoke BeanDefinitionRegistryPostProcessors first, if any.
+		// 如果有的化， 首先会调用BeanDefinitionRegistryPostProcessors
 		Set<String> processedBeans = new HashSet<>();
 
 		if (beanFactory instanceof BeanDefinitionRegistry) {
 			BeanDefinitionRegistry registry = (BeanDefinitionRegistry) beanFactory;
+			// 存放BeanFactory 后置处理器
 			List<BeanFactoryPostProcessor> regularPostProcessors = new ArrayList<>();
+			// 存放beanDefinitionRegistry 后置处理器
 			List<BeanDefinitionRegistryPostProcessor> registryProcessors = new ArrayList<>();
-
+			// 遍历所有参数传递进来的BeanFactoryPostProcessor (它们并没有作为Bean注册在容器中)
+			// 将所有参数传入的BeanFactoryPostProcessor 分成两组
+			// BeanDefinitionRegistryPostProcessor 与常规的BeanFactoryPostProcessor
+			// 1. 如果是BeanDefinitionRegistryProcessor, 现在执行postProcessBeanDefinitionRegistry(),
+			// 2. 否则记录为一个常规的BeanFactoryPostProcessor, 暂时不执行处理
 			for (BeanFactoryPostProcessor postProcessor : beanFactoryPostProcessors) {
 				if (postProcessor instanceof BeanDefinitionRegistryPostProcessor) {
 					BeanDefinitionRegistryPostProcessor registryProcessor =
 							(BeanDefinitionRegistryPostProcessor) postProcessor;
+					// 执行Bean Definition 注册
 					registryProcessor.postProcessBeanDefinitionRegistry(registry);
+					// 记录BeanDefinition 注册后置处理器
 					registryProcessors.add(registryProcessor);
 				}
 				else {
+					// 不做任何处理，只记录普通的BeanFactory后置处理器
 					regularPostProcessors.add(postProcessor);
 				}
 			}
+
 
 			// Do not initialize FactoryBeans here: We need to leave all regular beans
 			// uninitialized to let the bean factory post-processors apply to them!
