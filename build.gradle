@@ -2,7 +2,7 @@ buildscript {
 
 	repositories {
         mavenLocal()
-        maven { url "http://maven.aliyun.com/nexus/content/groups/public/" }
+        maven { url "https://maven.aliyun.com/nexus/content/groups/public/" }
         jcenter()
     }
 	dependencies {
@@ -301,7 +301,7 @@ configure(allprojects) { project ->
 		}
 		repositories {
 			mavenCentral()
-			maven { url "http://maven.aliyun.com/nexus/content/groups/public/" }
+			maven { url "https://maven.aliyun.com/nexus/content/groups/public/" }
 			maven { url "https://repo.spring.io/libs-spring-framework-build" }
 		}
 	}
@@ -434,4 +434,8 @@ configure(rootProject) {
 			}
 		}
 	}
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = "UTF-8"
 }

@@ -23,7 +23,6 @@ import org.springframework.beans.factory.config.BeanPostProcessor;
  * {@link BeanPostProcessor} implementations may implement this sub-interface in order
  * to post-process the merged bean definition (a processed copy of the original bean
  * definition) that the Spring {@code BeanFactory} uses to create a bean instance.
- *
  * <p>The {@link #postProcessMergedBeanDefinition} method may for example introspect
  * the bean definition in order to prepare some cached metadata before post-processing
  * actual instances of a bean. It is also allowed to modify the bean definition but
@@ -32,16 +31,23 @@ import org.springframework.beans.factory.config.BeanPostProcessor;
  * {@link RootBeanDefinition} itself but not to the properties of its base classes.
  *
  * @author Juergen Hoeller
- * @since 2.5
  * @see org.springframework.beans.factory.config.ConfigurableBeanFactory#getMergedBeanDefinition
+ * @since 2.5
  */
 public interface MergedBeanDefinitionPostProcessor extends BeanPostProcessor {
 
 	/**
+	 * <p>
+	 * 在Bean实例化完毕后调用,可以用来修改Merged BeanDefinition 中的一些properties 或者用来给后续回调中缓存一些东西
+	 * 这个算是将Merged BeanDefinition 暴露出来的一个回调
+	 * 重点关注Autowired AnnotationBeanProcessor ,该类会把@Autowire 等标记的
+	 * 需要依赖注入的成员变量 或者方法 实例给记录下来,方便后续populateBean 使用
 	 * Post-process the given merged bean definition for the specified bean.
+	 * </p>
+	 *
 	 * @param beanDefinition the merged bean definition for the bean
-	 * @param beanType the actual type of the managed bean instance
-	 * @param beanName the name of the bean
+	 * @param beanType       the actual type of the managed bean instance
+	 * @param beanName       the name of the bean
 	 * @see AbstractAutowireCapableBeanFactory#applyMergedBeanDefinitionPostProcessors
 	 */
 	void postProcessMergedBeanDefinition(RootBeanDefinition beanDefinition, Class<?> beanType, String beanName);
@@ -50,9 +56,10 @@ public interface MergedBeanDefinitionPostProcessor extends BeanPostProcessor {
 	 * A notification that the bean definition for the specified name has been reset,
 	 * and that this post-processor should clear any metadata for the affected bean.
 	 * <p>The default implementation is empty.
+	 *
 	 * @param beanName the name of the bean
-	 * @since 5.1
 	 * @see DefaultListableBeanFactory#resetBeanDefinition
+	 * @since 5.1
 	 */
 	default void resetBeanDefinition(String beanName) {
 	}

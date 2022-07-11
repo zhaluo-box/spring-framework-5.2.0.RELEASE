@@ -241,14 +241,20 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 	@SuppressWarnings("unchecked")
 	protected <T> T doGetBean(final String name, @Nullable final Class<T> requiredType,
 			@Nullable final Object[] args, boolean typeCheckOnly) throws BeansException {
-
+		// 通过三种形式获取BeanName
+		// 一个是原始的BeanName, 一个是加了&的,一个是别名
 		final String beanName = transformedBeanName(name);
 		Object bean;
 
 		// Eagerly check singleton cache for manually registered singletons.
+		// 尝试从单例池缓存获取Bean实例
 		Object sharedInstance = getSingleton(beanName);
+		// 如果先前已经创建过单例Bean的实例, 并且调用的getBean方法传入的参数为空,
+		// 则执行if 里面的逻辑,
+		// args 之所以要求为空,是因为如果有args, 则需要进一步赋值, 因此无法直接返回
 		if (sharedInstance != null && args == null) {
 			if (logger.isTraceEnabled()) {
+				// 如果Bean还在创建中,则说明是循环引用
 				if (isSingletonCurrentlyInCreation(beanName)) {
 					logger.trace("Returning eagerly cached instance of singleton bean '" + beanName +
 							"' that is not fully initialized yet - a consequence of a circular reference");
