@@ -56,7 +56,13 @@ final class PostProcessorRegistrationDelegate {
 	}
 
 	/**
+	 *
 	 * 静态方法
+	 * 调用BeanFactoryPostProcessor
+	 * 主要是分情况处理不同类型的BeanFactoryPostProcessors
+	 * BeanFactoryPostProcessors 主要分为两类,
+	 * 	一类是BeanDefinitionRegistry的BeanFactoryPostProcessor
+	 * 	另外一种就是
 	 */
 	public static void invokeBeanFactoryPostProcessors(
 			ConfigurableListableBeanFactory beanFactory, List<BeanFactoryPostProcessor> beanFactoryPostProcessors) {

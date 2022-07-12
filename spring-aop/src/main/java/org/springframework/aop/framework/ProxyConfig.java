@@ -30,20 +30,42 @@ import org.springframework.util.Assert;
  */
 public class ProxyConfig implements Serializable {
 
-	/** use serialVersionUID from Spring 1.2 for interoperability. */
+	/**
+	 * use serialVersionUID from Spring 1.2 for interoperability.
+	 */
 	private static final long serialVersionUID = -8409359707199703185L;
 
-
+	/**
+	 * 标记是否直接对目标类进行代理, 而不是通过接口产生代理
+	 */
 	private boolean proxyTargetClass = false;
 
+	/**
+	 * 标记是否对代理进行优化
+	 * true : 如果Bean有接口就直接使用JDK动态代理,没有接口就使用Cglib 代理
+	 */
 	private boolean optimize = false;
 
+	/**
+	 * opaque : 直译 不透明
+	 * 标记是否需要阻通过该配置创建的代理对象转换为Advised类型,默认为false,表示代理对象可以被转换为Advised
+	 * Advised接口其实就代表了被代理的对象, (此接口是Spring AOP 提供, 它提供了方法可以对代理进行操作
+	 * 比如移除一个切面之类的,) 它持有了代理对象的一些属性, 通过它可以对生成的代理对象的而一些属性进行认为干预,
+	 * 默认情况,我们可以这么用, Advised target = (Advised) context.getBean("opaqueTest") 从而就可以对该代理持有的一些属性进行干预
+	 */
 	boolean opaque = false;
 
+	/**
+	 * 标记代理对象是否应该被AOP框架通过AOPContext以ThreadLocal 的形式暴露出去
+	 * 当一个代理对象需要调用它[proxy本身]的另外一个代理方法时, 这个属性将非常有用, 默认为false, 避免不必要的拦截
+	 */
 	boolean exposeProxy = false;
 
+	/**
+	 * 标记是否需要冻结代理对象,即在代理对象生成之后,是否允许对其进行修改,默认为false
+	 * 当我们不希望调用方法修改转换成advised对象之后的代理对象时, 就可以设置为true给冻结上即可
+	 */
 	private boolean frozen = false;
-
 
 	/**
 	 * Set whether to proxy the target class directly, instead of just proxying
@@ -55,6 +77,7 @@ public class ProxyConfig implements Serializable {
 	 * <p>Note: Depending on the configuration of the concrete proxy factory,
 	 * the proxy-target-class behavior will also be applied if no interfaces
 	 * have been specified (and no interface autodetection is activated).
+	 *
 	 * @see org.springframework.aop.TargetSource#getTargetClass()
 	 */
 	public void setProxyTargetClass(boolean proxyTargetClass) {
@@ -146,9 +169,9 @@ public class ProxyConfig implements Serializable {
 		return this.frozen;
 	}
 
-
 	/**
 	 * Copy configuration from the other config object.
+	 *
 	 * @param other object to copy configuration from
 	 */
 	public void copyFrom(ProxyConfig other) {

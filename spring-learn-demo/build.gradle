@@ -11,6 +11,9 @@ repositories {
 
 dependencies {
     compile(project(":spring-context"))
+    compile(project(":spring-aop"))
+    compile(project(":spring-beans"))
+    compile group: 'org.springframework', name: 'spring-aspects', version: '5.2.0.RELEASE'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
 }

@@ -26,8 +26,8 @@ import org.springframework.util.Assert;
  * Provides convenient access to a configurable AopProxyFactory.
  *
  * @author Juergen Hoeller
- * @since 2.0.3
  * @see #createAopProxy()
+ * @since 2.0.3
  */
 @SuppressWarnings("serial")
 public class ProxyCreatorSupport extends AdvisedSupport {
@@ -36,9 +36,10 @@ public class ProxyCreatorSupport extends AdvisedSupport {
 
 	private final List<AdvisedSupportListener> listeners = new LinkedList<>();
 
-	/** Set to true when the first AOP proxy has been created. */
+	/**
+	 * Set to true when the first AOP proxy has been created.
+	 */
 	private boolean active = false;
-
 
 	/**
 	 * Create a new ProxyCreatorSupport instance.
@@ -49,13 +50,13 @@ public class ProxyCreatorSupport extends AdvisedSupport {
 
 	/**
 	 * Create a new ProxyCreatorSupport instance.
+	 *
 	 * @param aopProxyFactory the AopProxyFactory to use
 	 */
 	public ProxyCreatorSupport(AopProxyFactory aopProxyFactory) {
 		Assert.notNull(aopProxyFactory, "AopProxyFactory must not be null");
 		this.aopProxyFactory = aopProxyFactory;
 	}
-
 
 	/**
 	 * Customize the AopProxyFactory, allowing different strategies
@@ -77,6 +78,7 @@ public class ProxyCreatorSupport extends AdvisedSupport {
 
 	/**
 	 * Add the given AdvisedSupportListener to this proxy configuration.
+	 *
 	 * @param listener the listener to register
 	 */
 	public void addListener(AdvisedSupportListener listener) {
@@ -86,6 +88,7 @@ public class ProxyCreatorSupport extends AdvisedSupport {
 
 	/**
 	 * Remove the given AdvisedSupportListener from this proxy configuration.
+	 *
 	 * @param listener the listener to deregister
 	 */
 	public void removeListener(AdvisedSupportListener listener) {
@@ -93,20 +96,22 @@ public class ProxyCreatorSupport extends AdvisedSupport {
 		this.listeners.remove(listener);
 	}
 
-
 	/**
 	 * Subclasses should call this to get a new AOP proxy. They should <b>not</b>
 	 * create an AOP proxy with {@code this} as an argument.
 	 */
 	protected final synchronized AopProxy createAopProxy() {
+		// 主要是为了激活AdvisedSupportListener 监听器
 		if (!this.active) {
 			activate();
 		}
+		// 委托给Aop代理工厂去创建
 		return getAopProxyFactory().createAopProxy(this);
 	}
 
 	/**
 	 * Activate this proxy configuration.
+	 *
 	 * @see AdvisedSupportListener#activated
 	 */
 	private void activate() {
@@ -118,6 +123,7 @@ public class ProxyCreatorSupport extends AdvisedSupport {
 
 	/**
 	 * Propagate advice change event to all AdvisedSupportListeners.
+	 *
 	 * @see AdvisedSupportListener#adviceChanged
 	 */
 	@Override
