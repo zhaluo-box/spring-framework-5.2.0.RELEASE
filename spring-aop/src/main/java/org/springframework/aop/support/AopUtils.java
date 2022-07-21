@@ -43,9 +43,7 @@ import org.springframework.util.ReflectionUtils;
 
 /**
  * Utility methods for AOP support code.
- *
  * <p>Mainly for internal use within Spring's AOP support.
- *
  * <p>See {@link org.springframework.aop.framework.AopProxyUtils} for a
  * collection of framework-specific AOP utility methods which depend
  * on internals of Spring's AOP framework implementation.
@@ -61,13 +59,15 @@ public abstract class AopUtils {
 	 * Check whether the given object is a JDK dynamic proxy or a CGLIB proxy.
 	 * <p>This method additionally checks if the given object is an instance
 	 * of {@link SpringProxy}.
+	 *
 	 * @param object the object to check
 	 * @see #isJdkDynamicProxy
 	 * @see #isCglibProxy
 	 */
 	public static boolean isAopProxy(@Nullable Object object) {
-		return (object instanceof SpringProxy && (Proxy.isProxyClass(object.getClass()) ||
-				object.getClass().getName().contains(ClassUtils.CGLIB_CLASS_SEPARATOR)));
+		return (object instanceof SpringProxy && (Proxy.isProxyClass(object.getClass()) || object.getClass()
+																								 .getName()
+																								 .contains(ClassUtils.CGLIB_CLASS_SEPARATOR)));
 	}
 
 	/**
@@ -75,6 +75,7 @@ public abstract class AopUtils {
 	 * <p>This method goes beyond the implementation of
 	 * {@link Proxy#isProxyClass(Class)} by additionally checking if the
 	 * given object is an instance of {@link SpringProxy}.
+	 *
 	 * @param object the object to check
 	 * @see java.lang.reflect.Proxy#isProxyClass
 	 */
@@ -87,17 +88,18 @@ public abstract class AopUtils {
 	 * <p>This method goes beyond the implementation of
 	 * {@link ClassUtils#isCglibProxy(Object)} by additionally checking if
 	 * the given object is an instance of {@link SpringProxy}.
+	 *
 	 * @param object the object to check
 	 * @see ClassUtils#isCglibProxy(Object)
 	 */
 	public static boolean isCglibProxy(@Nullable Object object) {
-		return (object instanceof SpringProxy &&
-				object.getClass().getName().contains(ClassUtils.CGLIB_CLASS_SEPARATOR));
+		return (object instanceof SpringProxy && object.getClass().getName().contains(ClassUtils.CGLIB_CLASS_SEPARATOR));
 	}
 
 	/**
 	 * Determine the target class of the given bean instance which might be an AOP proxy.
 	 * <p>Returns the target class for an AOP proxy or the plain class otherwise.
+	 *
 	 * @param candidate the instance to check (might be an AOP proxy)
 	 * @return the target class (or the plain class of the given object as fallback;
 	 * never {@code null})
@@ -120,31 +122,32 @@ public abstract class AopUtils {
 	 * Select an invocable method on the target type: either the given method itself
 	 * if actually exposed on the target type, or otherwise a corresponding method
 	 * on one of the target type's interfaces or on the target type itself.
-	 * @param method the method to check
+	 *
+	 * @param method     the method to check
 	 * @param targetType the target type to search methods on (typically an AOP proxy)
 	 * @return a corresponding invocable method on the target type
 	 * @throws IllegalStateException if the given method is not invocable on the given
-	 * target type (typically due to a proxy mismatch)
-	 * @since 4.3
+	 *                               target type (typically due to a proxy mismatch)
 	 * @see MethodIntrospector#selectInvocableMethod(Method, Class)
+	 * @since 4.3
 	 */
 	public static Method selectInvocableMethod(Method method, @Nullable Class<?> targetType) {
 		if (targetType == null) {
 			return method;
 		}
 		Method methodToUse = MethodIntrospector.selectInvocableMethod(method, targetType);
-		if (Modifier.isPrivate(methodToUse.getModifiers()) && !Modifier.isStatic(methodToUse.getModifiers()) &&
-				SpringProxy.class.isAssignableFrom(targetType)) {
-			throw new IllegalStateException(String.format(
-					"Need to invoke method '%s' found on proxy for target class '%s' but cannot " +
-					"be delegated to target bean. Switch its visibility to package or protected.",
-					method.getName(), method.getDeclaringClass().getSimpleName()));
+		if (Modifier.isPrivate(methodToUse.getModifiers()) && !Modifier.isStatic(methodToUse.getModifiers()) && SpringProxy.class.isAssignableFrom(
+				targetType)) {
+			throw new IllegalStateException(String.format("Need to invoke method '%s' found on proxy for target class '%s' but cannot "
+														  + "be delegated to target bean. Switch its visibility to package or protected.", method.getName(),
+														  method.getDeclaringClass().getSimpleName()));
 		}
 		return methodToUse;
 	}
 
 	/**
 	 * Determine whether the given method is an "equals" method.
+	 *
 	 * @see java.lang.Object#equals
 	 */
 	public static boolean isEqualsMethod(@Nullable Method method) {
@@ -153,6 +156,7 @@ public abstract class AopUtils {
 
 	/**
 	 * Determine whether the given method is a "hashCode" method.
+	 *
 	 * @see java.lang.Object#hashCode
 	 */
 	public static boolean isHashCodeMethod(@Nullable Method method) {
@@ -161,6 +165,7 @@ public abstract class AopUtils {
 
 	/**
 	 * Determine whether the given method is a "toString" method.
+	 *
 	 * @see java.lang.Object#toString()
 	 */
 	public static boolean isToStringMethod(@Nullable Method method) {
@@ -169,11 +174,11 @@ public abstract class AopUtils {
 
 	/**
 	 * Determine whether the given method is a "finalize" method.
+	 *
 	 * @see java.lang.Object#finalize()
 	 */
 	public static boolean isFinalizeMethod(@Nullable Method method) {
-		return (method != null && method.getName().equals("finalize") &&
-				method.getParameterCount() == 0);
+		return (method != null && method.getName().equals("finalize") && method.getParameterCount() == 0);
 	}
 
 	/**
@@ -185,9 +190,10 @@ public abstract class AopUtils {
 	 * <p><b>NOTE:</b> In contrast to {@link org.springframework.util.ClassUtils#getMostSpecificMethod},
 	 * this method resolves Java 5 bridge methods in order to retrieve attributes
 	 * from the <i>original</i> method definition.
-	 * @param method the method to be invoked, which may come from an interface
+	 *
+	 * @param method      the method to be invoked, which may come from an interface
 	 * @param targetClass the target class for the current invocation.
-	 * May be {@code null} or may not even implement the method.
+	 *                    May be {@code null} or may not even implement the method.
 	 * @return the specific target method, or the original method if the
 	 * {@code targetClass} doesn't implement it or is {@code null}
 	 * @see org.springframework.util.ClassUtils#getMostSpecificMethod
@@ -203,7 +209,8 @@ public abstract class AopUtils {
 	 * Can the given pointcut apply at all on the given class?
 	 * <p>This is an important test as it can be used to optimize
 	 * out a pointcut for a class.
-	 * @param pc the static or dynamic pointcut to check
+	 *
+	 * @param pc          the static or dynamic pointcut to check
 	 * @param targetClass the class to test
 	 * @return whether the pointcut can apply on any method
 	 */
@@ -215,41 +222,54 @@ public abstract class AopUtils {
 	 * Can the given pointcut apply at all on the given class?
 	 * <p>This is an important test as it can be used to optimize
 	 * out a pointcut for a class.
-	 * @param pc the static or dynamic pointcut to check
-	 * @param targetClass the class to test
+	 *
+	 * @param pc               the static or dynamic pointcut to check
+	 * @param targetClass      the class to test
 	 * @param hasIntroductions whether or not the advisor chain
-	 * for this bean includes any introductions
+	 *                         for this bean includes any introductions
 	 * @return whether the pointcut can apply on any method
 	 */
 	public static boolean canApply(Pointcut pc, Class<?> targetClass, boolean hasIntroductions) {
 		Assert.notNull(pc, "Pointcut must not be null");
+
+		// 对Bean 进行粗筛
 		if (!pc.getClassFilter().matches(targetClass)) {
 			return false;
 		}
 
+		// 判断如果当前Advisor 所指代的的方法的切点表达式，如果是任意方法都放行，则直接返回
 		MethodMatcher methodMatcher = pc.getMethodMatcher();
 		if (methodMatcher == MethodMatcher.TRUE) {
 			// No need to iterate the methods if we're matching any method anyway...
 			return true;
 		}
 
+		// 这里将MethodMatcher 强转为IntroductionAwareMethodMatcher 类型的原因在于
+		// 如果目标类不包含Introduction类型的Advisor, 那么使用
+		// IntroductionAwareMethodMatcher.matches() 方法进行匹配判断时，可以提升匹配的效率
+		// 其会判断目标Bean中没有使用Introduction 织入新的方法， 则可以使用该方法 进行静态匹配，从而提示效率
+		// 因为Introduction类型的Advisor可以往目标类中织入新的方法， 新的方法也可能是被AOP环绕的方法
 		IntroductionAwareMethodMatcher introductionAwareMethodMatcher = null;
 		if (methodMatcher instanceof IntroductionAwareMethodMatcher) {
 			introductionAwareMethodMatcher = (IntroductionAwareMethodMatcher) methodMatcher;
 		}
 
 		Set<Class<?>> classes = new LinkedHashSet<>();
+		// 判断当前class 是不是代理的class 对象
 		if (!Proxy.isProxyClass(targetClass)) {
 			classes.add(ClassUtils.getUserClass(targetClass));
 		}
+
+		// 获取到targetClass  所实现的接口的Class 对象， 然后加入到集合中
 		classes.addAll(ClassUtils.getAllInterfacesForClassAsSet(targetClass));
 
 		for (Class<?> clazz : classes) {
 			Method[] methods = ReflectionUtils.getAllDeclaredMethods(clazz);
 			for (Method method : methods) {
+				// 如果 introductionAwareMethodMatcher（与上面呼应）不为空， 则使用introductionAwareMethodMatcher 匹配，否则使用 methodMatcher
 				if (introductionAwareMethodMatcher != null ?
-						introductionAwareMethodMatcher.matches(method, targetClass, hasIntroductions) :
-						methodMatcher.matches(method, targetClass)) {
+					introductionAwareMethodMatcher.matches(method, targetClass, hasIntroductions) :
+					methodMatcher.matches(method, targetClass)) {
 					return true;
 				}
 			}
@@ -262,7 +282,8 @@ public abstract class AopUtils {
 	 * Can the given advisor apply at all on the given class?
 	 * This is an important test as it can be used to optimize
 	 * out a advisor for a class.
-	 * @param advisor the advisor to check
+	 *
+	 * @param advisor     the advisor to check
 	 * @param targetClass class we're testing
 	 * @return whether the pointcut can apply on any method
 	 */
@@ -274,50 +295,63 @@ public abstract class AopUtils {
 	 * Can the given advisor apply at all on the given class?
 	 * <p>This is an important test as it can be used to optimize out a advisor for a class.
 	 * This version also takes into account introductions (for IntroductionAwareMethodMatchers).
-	 * @param advisor the advisor to check
-	 * @param targetClass class we're testing
+	 *
+	 * @param advisor          the advisor to check
+	 * @param targetClass      class we're testing
 	 * @param hasIntroductions whether or not the advisor chain for this bean includes
-	 * any introductions
+	 *                         any introductions
 	 * @return whether the pointcut can apply on any method
 	 */
 	public static boolean canApply(Advisor advisor, Class<?> targetClass, boolean hasIntroductions) {
+		// 判断是否是 IntroductionAdvisor
 		if (advisor instanceof IntroductionAdvisor) {
 			return ((IntroductionAdvisor) advisor).getClassFilter().matches(targetClass);
 		}
+		// 是否是 PointcutAdvisor
 		else if (advisor instanceof PointcutAdvisor) {
+			// 强转
 			PointcutAdvisor pca = (PointcutAdvisor) advisor;
 			return canApply(pca.getPointcut(), targetClass, hasIntroductions);
-		}
-		else {
+		} else {
+			// 如果advisor 连pointcut 表达式都没有的话， 就证明它是匹配所有Bean的
 			// It doesn't have a pointcut so we assume it applies.
 			return true;
 		}
 	}
 
 	/**
-	 * Determine the sublist of the {@code candidateAdvisors} list
-	 * that is applicable to the given class.
+	 * Determine the sublist of the {@code candidateAdvisors} list that is applicable to the given class.
+	 *
 	 * @param candidateAdvisors the Advisors to evaluate
-	 * @param clazz the target class
+	 * @param clazz             the target class
 	 * @return sublist of Advisors that can apply to an object of the given class
 	 * (may be the incoming List as-is)
 	 */
 	public static List<Advisor> findAdvisorsThatCanApply(List<Advisor> candidateAdvisors, Class<?> clazz) {
+
+		// 候选的Advisor通知是否为空
 		if (candidateAdvisors.isEmpty()) {
 			return candidateAdvisors;
 		}
+
+		// 有资质的Advisors
 		List<Advisor> eligibleAdvisors = new ArrayList<>();
+		// 遍历候选Advisor 筛选 有资质的Advisor
 		for (Advisor candidate : candidateAdvisors) {
+			// 判断是否实现了IntroductionAdvisor
 			if (candidate instanceof IntroductionAdvisor && canApply(candidate, clazz)) {
 				eligibleAdvisors.add(candidate);
 			}
 		}
+
 		boolean hasIntroductions = !eligibleAdvisors.isEmpty();
+
 		for (Advisor candidate : candidateAdvisors) {
 			if (candidate instanceof IntroductionAdvisor) {
 				// already processed
 				continue;
 			}
+
 			if (canApply(candidate, clazz, hasIntroductions)) {
 				eligibleAdvisors.add(candidate);
 			}
@@ -327,32 +361,28 @@ public abstract class AopUtils {
 
 	/**
 	 * Invoke the given target via reflection, as part of an AOP method invocation.
+	 *
 	 * @param target the target object
 	 * @param method the method to invoke
-	 * @param args the arguments for the method
+	 * @param args   the arguments for the method
 	 * @return the invocation result, if any
-	 * @throws Throwable if thrown by the target method
+	 * @throws Throwable                                      if thrown by the target method
 	 * @throws org.springframework.aop.AopInvocationException in case of a reflection error
 	 */
 	@Nullable
-	public static Object invokeJoinpointUsingReflection(@Nullable Object target, Method method, Object[] args)
-			throws Throwable {
+	public static Object invokeJoinpointUsingReflection(@Nullable Object target, Method method, Object[] args) throws Throwable {
 
 		// Use reflection to invoke the method.
 		try {
 			ReflectionUtils.makeAccessible(method);
 			return method.invoke(target, args);
-		}
-		catch (InvocationTargetException ex) {
+		} catch (InvocationTargetException ex) {
 			// Invoked method threw a checked exception.
 			// We must rethrow it. The client won't see the interceptor.
 			throw ex.getTargetException();
-		}
-		catch (IllegalArgumentException ex) {
-			throw new AopInvocationException("AOP configuration seems to be invalid: tried calling method [" +
-					method + "] on target [" + target + "]", ex);
-		}
-		catch (IllegalAccessException ex) {
+		} catch (IllegalArgumentException ex) {
+			throw new AopInvocationException("AOP configuration seems to be invalid: tried calling method [" + method + "] on target [" + target + "]", ex);
+		} catch (IllegalAccessException ex) {
 			throw new AopInvocationException("Could not access method [" + method + "]", ex);
 		}
 	}

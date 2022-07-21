@@ -32,7 +32,7 @@ public class Application {
 			System.out.println("BeanDefinition : " + beanDefinitionName);
 		}
 
-		WelcomeService welcomeService = (DefaultWelcomeService) applicationContext.getBean("defaultWelcomeService");
+		WelcomeService welcomeService = (WelcomeService) applicationContext.getBean("defaultWelcomeService");
 		System.out.println(welcomeService.sayHello("强大的spring 框架"));
 
 		// 演示自定义BeanDefinitionRegistryProcessor

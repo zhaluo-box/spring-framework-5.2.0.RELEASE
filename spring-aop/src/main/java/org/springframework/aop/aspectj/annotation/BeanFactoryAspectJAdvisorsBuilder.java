@@ -35,8 +35,8 @@ import org.springframework.util.Assert;
  * Spring Advisors based on them, for use with auto-proxying.
  *
  * @author Juergen Hoeller
- * @since 2.0.2
  * @see AnnotationAwareAspectJAutoProxyCreator
+ * @since 2.0.2
  */
 public class BeanFactoryAspectJAdvisorsBuilder {
 
@@ -44,6 +44,9 @@ public class BeanFactoryAspectJAdvisorsBuilder {
 
 	private final AspectJAdvisorFactory advisorFactory;
 
+	/**
+	 * 实例变量多线程可见
+	 */
 	@Nullable
 	private volatile List<String> aspectBeanNames;
 
@@ -51,9 +54,9 @@ public class BeanFactoryAspectJAdvisorsBuilder {
 
 	private final Map<String, MetadataAwareAspectInstanceFactory> aspectFactoryCache = new ConcurrentHashMap<>();
 
-
 	/**
 	 * Create a new BeanFactoryAspectJAdvisorsBuilder for the given BeanFactory.
+	 *
 	 * @param beanFactory the ListableBeanFactory to scan
 	 */
 	public BeanFactoryAspectJAdvisorsBuilder(ListableBeanFactory beanFactory) {
@@ -62,7 +65,8 @@ public class BeanFactoryAspectJAdvisorsBuilder {
 
 	/**
 	 * Create a new BeanFactoryAspectJAdvisorsBuilder for the given BeanFactory.
-	 * @param beanFactory the ListableBeanFactory to scan
+	 *
+	 * @param beanFactory    the ListableBeanFactory to scan
 	 * @param advisorFactory the AspectJAdvisorFactory to build each Advisor with
 	 */
 	public BeanFactoryAspectJAdvisorsBuilder(ListableBeanFactory beanFactory, AspectJAdvisorFactory advisorFactory) {
@@ -72,79 +76,98 @@ public class BeanFactoryAspectJAdvisorsBuilder {
 		this.advisorFactory = advisorFactory;
 	}
 
-
 	/**
 	 * Look for AspectJ-annotated aspect beans in the current bean factory,
 	 * and return to a list of Spring AOP Advisors representing them.
 	 * <p>Creates a Spring Advisor for each AspectJ advice method.
+	 *
 	 * @return the list of {@link org.springframework.aop.Advisor} beans
 	 * @see #isEligibleBean
 	 */
 	public List<Advisor> buildAspectJAdvisors() {
+		// 尝试从缓存
 		List<String> aspectNames = this.aspectBeanNames;
 
+		// 缓冲为空的情况
 		if (aspectNames == null) {
+			// 添加同步锁
 			synchronized (this) {
 				aspectNames = this.aspectBeanNames;
+				// 典型的double check 保证线程安全
 				if (aspectNames == null) {
 					List<Advisor> advisors = new ArrayList<>();
+					// 用于保存切面的名称的结合
 					aspectNames = new ArrayList<>();
-					String[] beanNames = BeanFactoryUtils.beanNamesForTypeIncludingAncestors(
-							this.beanFactory, Object.class, true, false);
+					// 尝试从Bean容器以及父容器，获取Bean的名称
+					// AOP 功能中在这里传入的Object对象，代表去容器中获取到所有的组件的名称，然后再进行遍历，这个过程是十分的消耗性能的，所以说spring 会
+					// 在这里加入了保存切面信息的缓存
+					String[] beanNames = BeanFactoryUtils.beanNamesForTypeIncludingAncestors(this.beanFactory, Object.class, true, false);
+					// 遍历
 					for (String beanName : beanNames) {
+						// 对Bean 进行筛选
 						if (!isEligibleBean(beanName)) {
 							continue;
 						}
 						// We must be careful not to instantiate beans eagerly as in this case they
 						// would be cached by the Spring container but would not have been weaved.
+						// 尝试通过名称获取
 						Class<?> beanType = this.beanFactory.getType(beanName);
 						if (beanType == null) {
 							continue;
 						}
+						// 得到Bean 判定是否是Aspect
 						if (this.advisorFactory.isAspect(beanType)) {
+							// 是切面类 加入缓存
 							aspectNames.add(beanName);
+							// 包装成切面元数据
 							AspectMetadata amd = new AspectMetadata(beanType, beanName);
 							if (amd.getAjType().getPerClause().getKind() == PerClauseKind.SINGLETON) {
-								MetadataAwareAspectInstanceFactory factory =
-										new BeanFactoryAspectInstanceFactory(this.beanFactory, beanName);
+								// 创建了一个工厂
+								MetadataAwareAspectInstanceFactory factory = new BeanFactoryAspectInstanceFactory(this.beanFactory, beanName);
+								// Aspect里面的advice和pointcut被拆分成一个个advisor
+								// advisor里的advice和pointcut是1对1的关系
 								List<Advisor> classAdvisors = this.advisorFactory.getAdvisors(factory);
 								if (this.beanFactory.isSingleton(beanName)) {
+									// 单例则直接将advisor类缓存 this.advisorsCache 与 this.aspectBeanNames 结合使用 还有下面的 aspectFactoryCache
 									this.advisorsCache.put(beanName, classAdvisors);
-								}
-								else {
+								} else {
+									// 否则将对应的工厂缓存
 									this.aspectFactoryCache.put(beanName, factory);
 								}
 								advisors.addAll(classAdvisors);
-							}
-							else {
+							} else {  // 非单例逻辑
 								// Per target or per this.
 								if (this.beanFactory.isSingleton(beanName)) {
-									throw new IllegalArgumentException("Bean with name '" + beanName +
-											"' is a singleton, but aspect instantiation model is not singleton");
+									throw new IllegalArgumentException(
+											"Bean with name '" + beanName + "' is a singleton, but aspect instantiation model is not singleton");
 								}
-								MetadataAwareAspectInstanceFactory factory =
-										new PrototypeAspectInstanceFactory(this.beanFactory, beanName);
+								MetadataAwareAspectInstanceFactory factory = new PrototypeAspectInstanceFactory(this.beanFactory, beanName);
 								this.aspectFactoryCache.put(beanName, factory);
 								advisors.addAll(this.advisorFactory.getAdvisors(factory));
 							}
 						}
 					}
+					// 将收集的AspectName 重新设置给aspectBeanNames 缓存 实例变量多线程可见
 					this.aspectBeanNames = aspectNames;
 					return advisors;
 				}
 			}
 		}
 
+		// 如果 aspectNames不为空，代表不是首次进入BuildAspectJAdvisors
 		if (aspectNames.isEmpty()) {
 			return Collections.emptyList();
 		}
 		List<Advisor> advisors = new ArrayList<>();
+
+		//
 		for (String aspectName : aspectNames) {
 			List<Advisor> cachedAdvisors = this.advisorsCache.get(aspectName);
 			if (cachedAdvisors != null) {
+				// 单例
 				advisors.addAll(cachedAdvisors);
-			}
-			else {
+			} else {
+				// 非单例
 				MetadataAwareAspectInstanceFactory factory = this.aspectFactoryCache.get(aspectName);
 				advisors.addAll(this.advisorFactory.getAdvisors(factory));
 			}
@@ -154,8 +177,9 @@ public class BeanFactoryAspectJAdvisorsBuilder {
 
 	/**
 	 * Return whether the aspect bean with the given name is eligible.
+	 *
 	 * @param beanName the name of the aspect bean
-	 * @return whether the bean is eligible
+	 * @return whether the bean is eligible 任意Bean都是有资格的，默认返回true
 	 */
 	protected boolean isEligibleBean(String beanName) {
 		return true;

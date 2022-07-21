@@ -36,16 +36,15 @@ public class LazySingletonAspectInstanceFactoryDecorator implements MetadataAwar
 	@Nullable
 	private volatile Object materialized;
 
-
 	/**
 	 * Create a new lazily initializing decorator for the given AspectInstanceFactory.
+	 *
 	 * @param maaif the MetadataAwareAspectInstanceFactory to decorate
 	 */
 	public LazySingletonAspectInstanceFactoryDecorator(MetadataAwareAspectInstanceFactory maaif) {
 		Assert.notNull(maaif, "AspectInstanceFactory must not be null");
 		this.maaif = maaif;
 	}
-
 
 	@Override
 	public Object getAspectInstance() {
@@ -55,8 +54,7 @@ public class LazySingletonAspectInstanceFactoryDecorator implements MetadataAwar
 			if (mutex == null) {
 				aspectInstance = this.maaif.getAspectInstance();
 				this.materialized = aspectInstance;
-			}
-			else {
+			} else {
 				synchronized (mutex) {
 					aspectInstance = this.materialized;
 					if (aspectInstance == null) {
@@ -94,7 +92,6 @@ public class LazySingletonAspectInstanceFactoryDecorator implements MetadataAwar
 	public int getOrder() {
 		return this.maaif.getOrder();
 	}
-
 
 	@Override
 	public String toString() {

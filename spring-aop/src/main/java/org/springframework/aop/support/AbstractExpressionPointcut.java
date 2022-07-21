@@ -61,6 +61,7 @@ public abstract class AbstractExpressionPointcut implements ExpressionPointcut, 
 	public void setExpression(@Nullable String expression) {
 		this.expression = expression;
 		try {
+			// 钩子方法
 			onSetExpression(expression);
 		}
 		catch (IllegalArgumentException ex) {

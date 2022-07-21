@@ -35,8 +35,8 @@ import org.springframework.util.Assert;
  * for use with auto-proxying.
  *
  * @author Juergen Hoeller
- * @since 2.0.2
  * @see AbstractAdvisorAutoProxyCreator
+ * @since 2.0.2
  */
 public class BeanFactoryAdvisorRetrievalHelper {
 
@@ -47,9 +47,9 @@ public class BeanFactoryAdvisorRetrievalHelper {
 	@Nullable
 	private volatile String[] cachedAdvisorBeanNames;
 
-
 	/**
 	 * Create a new BeanFactoryAdvisorRetrievalHelper for the given BeanFactory.
+	 *
 	 * @param beanFactory the ListableBeanFactory to scan
 	 */
 	public BeanFactoryAdvisorRetrievalHelper(ConfigurableListableBeanFactory beanFactory) {
@@ -57,21 +57,24 @@ public class BeanFactoryAdvisorRetrievalHelper {
 		this.beanFactory = beanFactory;
 	}
 
-
 	/**
 	 * Find all eligible Advisor beans in the current bean factory,
 	 * ignoring FactoryBeans and excluding beans that are currently in creation.
+	 *
 	 * @return the list of {@link org.springframework.aop.Advisor} beans
 	 * @see #isEligibleBean
 	 */
 	public List<Advisor> findAdvisorBeans() {
 		// Determine list of advisor bean names, if not cached already.
+		// 确定被缓存的advisorBean名称，
 		String[] advisorNames = this.cachedAdvisorBeanNames;
+		// 如果不存在，没有被缓存
 		if (advisorNames == null) {
 			// Do not initialize FactoryBeans here: We need to leave all regular beans
 			// uninitialized to let the auto-proxy creator apply to them!
-			advisorNames = BeanFactoryUtils.beanNamesForTypeIncludingAncestors(
-					this.beanFactory, Advisor.class, true, false);
+			// 尝试从容器以及其父容器分析得到所有的Advisor bean 名称
+			advisorNames = BeanFactoryUtils.beanNamesForTypeIncludingAncestors(this.beanFactory, Advisor.class, true, false);
+			// 添加到缓存
 			this.cachedAdvisorBeanNames = advisorNames;
 		}
 		if (advisorNames.length == 0) {
@@ -81,24 +84,22 @@ public class BeanFactoryAdvisorRetrievalHelper {
 		List<Advisor> advisors = new ArrayList<>();
 		for (String name : advisorNames) {
 			if (isEligibleBean(name)) {
-				if (this.beanFactory.isCurrentlyInCreation(name)) {
+				// 创建中的Bean会被忽略
+				if (this.beanFactory.isCurrentlyInCreation(name)) { //循环依赖
 					if (logger.isTraceEnabled()) {
 						logger.trace("Skipping currently created advisor '" + name + "'");
 					}
-				}
-				else {
+				} else { // 不是循环依赖
 					try {
 						advisors.add(this.beanFactory.getBean(name, Advisor.class));
-					}
-					catch (BeanCreationException ex) {
+					} catch (BeanCreationException ex) {
 						Throwable rootCause = ex.getMostSpecificCause();
 						if (rootCause instanceof BeanCurrentlyInCreationException) {
 							BeanCreationException bce = (BeanCreationException) rootCause;
 							String bceBeanName = bce.getBeanName();
 							if (bceBeanName != null && this.beanFactory.isCurrentlyInCreation(bceBeanName)) {
 								if (logger.isTraceEnabled()) {
-									logger.trace("Skipping advisor '" + name +
-											"' with dependency on currently created bean: " + ex.getMessage());
+									logger.trace("Skipping advisor '" + name + "' with dependency on currently created bean: " + ex.getMessage());
 								}
 								// Ignore: indicates a reference back to the bean we're trying to advise.
 								// We want to find advisors other than the currently created bean itself.
@@ -116,6 +117,7 @@ public class BeanFactoryAdvisorRetrievalHelper {
 	/**
 	 * Determine whether the aspect bean with the given name is eligible.
 	 * <p>The default implementation always returns {@code true}.
+	 *
 	 * @param beanName the name of the aspect bean
 	 * @return whether the bean is eligible
 	 */
