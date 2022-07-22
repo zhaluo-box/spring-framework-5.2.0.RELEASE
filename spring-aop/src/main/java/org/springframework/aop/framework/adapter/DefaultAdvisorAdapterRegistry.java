@@ -42,7 +42,6 @@ public class DefaultAdvisorAdapterRegistry implements AdvisorAdapterRegistry, Se
 
 	private final List<AdvisorAdapter> adapters = new ArrayList<>(3);
 
-
 	/**
 	 * Create a new DefaultAdvisorAdapterRegistry, registering well-known adapters.
 	 */
@@ -52,26 +51,38 @@ public class DefaultAdvisorAdapterRegistry implements AdvisorAdapterRegistry, Se
 		registerAdvisorAdapter(new ThrowsAdviceAdapter());
 	}
 
-
 	@Override
 	public Advisor wrap(Object adviceObject) throws UnknownAdviceTypeException {
+		// Advisor 子类， 直接返回
 		if (adviceObject instanceof Advisor) {
 			return (Advisor) adviceObject;
 		}
+		// 不是 advice 也不是advisor  直接抛出 未知advice类型异常
 		if (!(adviceObject instanceof Advice)) {
 			throw new UnknownAdviceTypeException(adviceObject);
 		}
+		// 是advice  进行强转
 		Advice advice = (Advice) adviceObject;
+
+		// 如果是methodInterceptor 子类, 则进行包装返回
+		// 此处目的是兼容其他框架
 		if (advice instanceof MethodInterceptor) {
 			// So well-known it doesn't even need an adapter.
 			return new DefaultPointcutAdvisor(advice);
 		}
+
+		// 否则遍历注册的适配器，如果存在支持的适配器，则使用defaultPointcutAdvisor 进行包装
+		// beforeAdvice AfterAdvice throwAdvice 三种通知类型的支持是借助适配器模式实现的
+		// advisorAdapterRegistry , DefaultAdvisorAdapterRegistry 和GlobalAdvisorAdapterRegistry 主要负责对Advisor Adapter　进行注册
+
+		// 如果 不是MethodInterceptor 子类
 		for (AdvisorAdapter adapter : this.adapters) {
-			// Check that it is supported.
+			// Check that it is supported. 检查是否支持， 有一个支持就直接返回默认的pointcutAdvisor
 			if (adapter.supportsAdvice(advice)) {
 				return new DefaultPointcutAdvisor(advice);
 			}
 		}
+		// 抛出未知的advice 类型异常
 		throw new UnknownAdviceTypeException(advice);
 	}
 

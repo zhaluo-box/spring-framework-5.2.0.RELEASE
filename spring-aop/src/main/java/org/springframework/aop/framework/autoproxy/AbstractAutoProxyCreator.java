@@ -398,6 +398,7 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport imp
 		}
 
 		// 与上面的不需要被织入的逻辑呼应
+		// 标记当前Bean是不需要被代理的，下次就不用重复生成了
 		this.advisedBeans.put(cacheKey, Boolean.FALSE);
 		return bean;
 	}
@@ -479,40 +480,65 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport imp
 	 *
 	 * @param beanClass            the class of the bean
 	 * @param beanName             the name of the bean
-	 * @param specificInterceptors the set of interceptors that is
-	 *                             specific to this bean (may be empty, but not null)
-	 * @param targetSource         the TargetSource for the proxy,
-	 *                             already pre-configured to access the bean
+	 * @param specificInterceptors the set of interceptors that is specific to this bean (may be empty, but not null) 获取为空但是不能为null
+	 * @param targetSource         the TargetSource for the proxy, already pre-configured to access the bean 用于配置的targetSource ,总是提前配置访问Bean
 	 * @return the AOP proxy for the bean
 	 * @see #buildAdvisors
 	 */
 	protected Object createProxy(Class<?> beanClass, @Nullable String beanName, @Nullable Object[] specificInterceptors, TargetSource targetSource) {
 
+		// 判断当前BeanFactory 是否是 ConfigurableListableBeanFactory， 如果是就暴露目标类
 		if (this.beanFactory instanceof ConfigurableListableBeanFactory) {
 			AutoProxyUtils.exposeTargetClass((ConfigurableListableBeanFactory) this.beanFactory, beanName, beanClass);
 		}
 
+		// 包装当前this 为代理工厂 proxyFactory
 		ProxyFactory proxyFactory = new ProxyFactory();
+		// annotationAwareAspectJAutoProxyCreator  对象赋值给ProxyFactory
 		proxyFactory.copyFrom(this);
 
+		// 处理proxyTargetClass 属性
+		// 如果希望使用CGlib 来代理接口，可以配置
+		// proxy-target-class="true", 这样不管有没有接口，都使用CGLIB来生成代理
+		// <aop:config-target-class="true"/>
+
+		// 如果代理工厂不是代理目标类
 		if (!proxyFactory.isProxyTargetClass()) {
+			//  判定是否该代理目标类
 			if (shouldProxyTargetClass(beanClass, beanName)) {
+				// 是代理设置代理目标类为true
 				proxyFactory.setProxyTargetClass(true);
 			} else {
+				// 1. 有接口的，调用一次或多次 ： proxyFactory.addInterFace(ifc)
+				// 2. 没有接口的， 调用： proxyFactory.setProxyTargetClass(true)
+				// 不是 评估代理接口
 				evaluateProxyInterfaces(beanClass, proxyFactory);
 			}
 		}
 
+		// 这个方法主要对前面传递进来的横切逻辑实例，进行包装
+		// 注意： 如果specificInterceptors 中有advice和Interceptor  它们也会被包装成advisor
+		// 方法会整理合并得到最终的advisors  （毕竟interceptorNames 还制定了一些拦截器的）
+		// 至于调用的先后顺序，通过方法里的applyCommonInterceptorsFirst 参数可以进行设置
+		// 若applyCommonInterceptorsFirst 为true ,interceptorNames 属性指定的Advisor 优先调用,默认为true
+		// 构建Advisor
 		Advisor[] advisors = buildAdvisors(beanName, specificInterceptors);
+		// 代理工厂添加并设置targetSource
 		proxyFactory.addAdvisors(advisors);
 		proxyFactory.setTargetSource(targetSource);
+		// 自定义代理工厂 子类扩展点 由此可以继续定制proxyFactory
 		customizeProxyFactory(proxyFactory);
 
 		proxyFactory.setFrozen(this.freezeProxy);
+		// 设置preFiltered的属性值，默认为false； 子类： AbstractAdvisorAutoProxyCreator 修改为true
+		// preFiltered 字段意思为 ： 是否已为特定目标筛选advisor
+		// 这个字段和DefaultAdvisorChainFactory.getInterceptorsAndDynamicInterceptionAdvice获取所有的Advisor
+		// CglibAopProxy 和JdkDynamicAopProxy 都会调用此方法，然后递归执行所有的Advisor
 		if (advisorsPreFiltered()) {
 			proxyFactory.setPreFiltered(true);
 		}
 
+		// 获取代理
 		return proxyFactory.getProxy(getProxyClassLoader());
 	}
 
@@ -563,6 +589,10 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport imp
 		if (specificInterceptors != null) {
 			allInterceptors.addAll(Arrays.asList(specificInterceptors));
 			if (commonInterceptors.length > 0) {
+				// 添加拦截器
+				// 调用的先后顺序，通过applyCommonInterceptorsFirst参数进行设置
+				// 若applyCommonInterceptorsFirst 为true interceptorNames 属性指定advisor 优先调用
+				// 默认为 true
 				if (this.applyCommonInterceptorsFirst) {
 					allInterceptors.addAll(0, Arrays.asList(commonInterceptors));
 				} else {
@@ -577,8 +607,10 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport imp
 						 + nrOfSpecificInterceptors + " specific interceptors");
 		}
 
+		// 把拦截器包装成advisor
 		Advisor[] advisors = new Advisor[allInterceptors.size()];
 		for (int i = 0; i < allInterceptors.size(); i++) {
+			// wrap 包装
 			advisors[i] = this.advisorAdapterRegistry.wrap(allInterceptors.get(i));
 		}
 		return advisors;
@@ -594,8 +626,12 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport imp
 		ConfigurableBeanFactory cbf = (bf instanceof ConfigurableBeanFactory ? (ConfigurableBeanFactory) bf : null);
 		List<Advisor> advisors = new ArrayList<>();
 		for (String beanName : this.interceptorNames) {
+
+			// cbf 为null 或者 当前Bean并不处于创建中
 			if (cbf == null || !cbf.isCurrentlyInCreation(beanName)) {
+				// bf 不为空null
 				Assert.state(bf != null, "BeanFactory required for resolving interceptor names");
+				// 获取Bean实例
 				Object next = bf.getBean(beanName);
 				advisors.add(this.advisorAdapterRegistry.wrap(next));
 			}
@@ -604,8 +640,7 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport imp
 	}
 
 	/**
-	 * Subclasses may choose to implement this: for example,
-	 * to change the interfaces exposed.
+	 * Subclasses may choose to implement this: for example, to change the interfaces exposed.
 	 * <p>The default implementation is empty.
 	 *
 	 * @param proxyFactory a ProxyFactory that is already configured with

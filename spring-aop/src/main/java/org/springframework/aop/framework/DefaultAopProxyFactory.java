@@ -24,7 +24,6 @@ import org.springframework.aop.SpringProxy;
 /**
  * Default {@link AopProxyFactory} implementation, creating either a CGLIB proxy
  * or a JDK dynamic proxy.
- *
  * <p>Creates a CGLIB proxy if one the following is true for a given
  * {@link AdvisedSupport} instance:
  * <ul>
@@ -32,16 +31,15 @@ import org.springframework.aop.SpringProxy;
  * <li>the {@code proxyTargetClass} flag is set
  * <li>no proxy interfaces have been specified
  * </ul>
- *
  * <p>In general, specify {@code proxyTargetClass} to enforce a CGLIB proxy,
  * or specify one or more interfaces to use a JDK dynamic proxy.
  *
  * @author Rod Johnson
  * @author Juergen Hoeller
- * @since 12.03.2004
  * @see AdvisedSupport#setOptimize
  * @see AdvisedSupport#setProxyTargetClass
  * @see AdvisedSupport#setInterfaces
+ * @since 12.03.2004
  */
 @SuppressWarnings("serial")
 public class DefaultAopProxyFactory implements AopProxyFactory, Serializable {
@@ -51,15 +49,18 @@ public class DefaultAopProxyFactory implements AopProxyFactory, Serializable {
 		if (config.isOptimize() || config.isProxyTargetClass() || hasNoUserSuppliedProxyInterfaces(config)) {
 			Class<?> targetClass = config.getTargetClass();
 			if (targetClass == null) {
-				throw new AopConfigException("TargetSource cannot determine target class: " +
-						"Either an interface or a target is required for proxy creation.");
+				throw new AopConfigException(
+						"TargetSource cannot determine target class: " + "Either an interface or a target is required for proxy creation.");
 			}
+			// 如果要代理的类本身就是接口
+			// 或者它已经是一个JDK的代理类，（Proxy 的子类，所有的JDK代理类都是此类的子类）
+			// 也会有JDK动态代理
 			if (targetClass.isInterface() || Proxy.isProxyClass(targetClass)) {
 				return new JdkDynamicAopProxy(config);
 			}
 			return new ObjenesisCglibAopProxy(config);
-		}
-		else {
+		} else {
+			// 如果有接口，就会跑到这个分支
 			return new JdkDynamicAopProxy(config);
 		}
 	}
